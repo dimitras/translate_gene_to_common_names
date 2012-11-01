@@ -1,3 +1,3 @@
 Translate protein names(gene names, protein accnos, part of the protein description) to common names.
 
-Searched eiconsanoid pathway proteins from publication through mouse proteome from uniprot (fasta file) to generate a list with protein and common names.
+Searched eiconsanoid pathway proteins from publication (http://www.mcponline.org/content/early/2012/02/23/mcp.M111.014746) through mouse proteome from uniprot fasta file (release 2012 and not 2009) to generate a list with protein and common names.
