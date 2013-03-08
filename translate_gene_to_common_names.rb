@@ -62,36 +62,42 @@ def calc_mw(seq=[])
   return mw + H2O
 end
 
-outfile = 'results/proteins_translation.csv'
-proteome_db_fasta_file = 'data/MOUSE.fasta'
+# outfile = 'results/proteins_translation.csv'
+outfile = 'results/Mouse_AAgenes_uncurated_translation.csv'
+proteome_db_fasta_file = 'data/MOUSE2013.fasta'
+# names_list_file = 'data/protein_names.csv'
+names_list_file = 'data/Mouse_AAgenes_uncurated_updated.csv'
 
 protein_to_common_names = Hash.new { |h,k| h[k] = [] }
-FasterCSV.foreach("data/protein_names.csv") do |row|
+FasterCSV.foreach(names_list_file) do |row|
 	prot_name = row[0]
-	protein_to_common_names[prot_name] = nil
+  protein_to_common_names[prot_name] = nil
 end
 
 fasta_dictionary = Hash.new { |h,k| h[k] = [] }
 proteome_db_fap = FastaParser.open(proteome_db_fasta_file)
 proteome_db_fap.each do |fasta_entry|
-        key1 = fasta_entry.accno
-        fasta_entry.desc =~ /(.+)_MOUSE.+GN=(.+)\s/
-        key2 = $1
-        key3 = $2
-        mw = calc_mw(fasta_entry.seq.split(''))
-
-        fasta_dictionary[key1] = [fasta_entry.desc, mw]
-        fasta_dictionary[key2] = [fasta_entry.desc, mw]
-        fasta_dictionary[key3] = [fasta_entry.desc, mw]
+  key1 = fasta_entry.accno # protein accno
+  if key1.include?('-')
+    fasta_entry.desc =~ /(.+)_MOUSE.+GN=(.+).*/
+  else
+    fasta_entry.desc =~ /(.+)_MOUSE.+GN=(.+)\sPE.+/
+  end
+  key2 = $1 # accno or genename
+  key3 = $2 # genename
+  mw = calc_mw(fasta_entry.seq.split(''))
+  fasta_dictionary[key1] = [fasta_entry.desc, mw]
+  fasta_dictionary[key2] = [fasta_entry.desc, mw]
+  fasta_dictionary[key3] = [fasta_entry.desc, mw]
 end
 
 protein_to_common_names.each_key do |prot_name|
-      protein_to_common_names[prot_name] = [fasta_dictionary[prot_name][0],fasta_dictionary[prot_name][1]]
+  protein_to_common_names[prot_name] = [fasta_dictionary[prot_name][0],fasta_dictionary[prot_name][1]]
 end
 
 FasterCSV.open(outfile,'w') do |csv|
 	csv << %w{ PROTEIN_NAME COMMON_NAME MW}
-        protein_to_common_names.each_key do |prot_name|
-              csv << [prot_name, protein_to_common_names[prot_name][0], protein_to_common_names[prot_name][1]]
-        end
+    protein_to_common_names.each_key do |prot_name|
+      csv << [prot_name, protein_to_common_names[prot_name][0], protein_to_common_names[prot_name][1]]
+    end
 end
